@@ -1,43 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alleviate Tax RSS Assistant</title>
+
+  <!-- 🧠 Markdown + Code Highlighting Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js/lib/common.min.js"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github.min.css"
+  />
+
+  <!-- 🎨 Modern Minimal Styling -->
+  <style>
+    body {
+      background-color: #f9fafb;
+      font-family: "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+      background-color: #ffffff;
+      border-bottom: 2px solid #e5e7eb;
+      width: 100%;
+      position: sticky;
+      top: 0;
+    }
+
+    header img {
+      height: 48px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    #chatbox {
+      width: 90%;
+      max-width: 900px;
+      height: 70vh;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow-y: auto;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .message {
+      margin-bottom: 15px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .user {
+      background: #e0f2fe;
+      padding: 10px 15px;
+      border-radius: 8px;
+      max-width: 80%;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .bot {
+      background: #f3f4f6;
+      padding: 10px 15px;
+      border-radius: 8px;
+      max-width: 80%;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+
+    #inputContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      width: 90%;
+      max-width: 900px;
+      margin: 20px 0;
+    }
+
+    #message {
+      flex: 1;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+    code {
+      background-color: #f3f4f6;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: "Courier New", monospace;
+    }
+
+    pre code {
+      display: block;
+      padding: 10px;
+      overflow-x: auto;
+      border-radius: 6px;
+      background: #f6f8fa;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <img src="alleviate_logo.svg" alt="Alleviate Tax Logo" />
+    <h1>Alleviate Tax RSS Assistant</h1>
+  </header>
+
+  <main id="chatbox"></main>
+
+  <div id="inputContainer">
+    <input
+      id="message"
+      type="text"
+      placeholder="Ask me anything..."
+      onkeydown="if(event.key==='Enter') sendMessage()"
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+    <button onclick="sendMessage()">Send</button>
+  </div>
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+  <script>
+    // Configure markdown rendering
+    marked.setOptions({
+      highlight: function (code) {
+        return hljs.highlightAuto(code).value;
+      },
+      breaks: true,
+    });
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+    async function sendMessage() {
+      const msgInput = document.getElementById("message");
+      const chatbox = document.getElementById("chatbox");
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+      const userMsg = msgInput.value.trim();
+      if (!userMsg) return;
+
+      // Add user message
+      const userDiv = document.createElement("div");
+      userDiv.className = "message user";
+      userDiv.innerText = userMsg;
+      chatbox.appendChild(userDiv);
+      msgInput.value = "";
+
+      // Scroll down
+      chatbox.scrollTop = chatbox.scrollHeight;
+
+      // Add a "typing" indicator
+      const typingDiv = document.createElement("div");
+      typingDiv.className = "message bot";
+      typingDiv.innerHTML = "<em>Alleviate Helper is thinking...</em>";
+      chatbox.appendChild(typingDiv);
+      chatbox.scrollTop = chatbox.scrollHeight;
+
+      try {
+		const response = await fetch("http://localhost:9000/chat", {
+		  method: "POST",
+		  headers: { "Content-Type": "application/json" },
+		  body: JSON.stringify({ message: userMsg }),
+		});
+
+
+        const data = await response.json();
+
+        // Replace typing indicator with formatted response
+        const formattedReply = marked.parse(data.reply || "⚠️ No response");
+        typingDiv.innerHTML = formattedReply;
+        chatbox.scrollTop = chatbox.scrollHeight;
+      } catch (err) {
+        typingDiv.innerHTML = "<em>⚠️ Error connecting to the server.</em>";
+      }
+    }
+  </script>
+</body>
 </html>

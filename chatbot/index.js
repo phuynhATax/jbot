@@ -2,35 +2,18 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { ChatOpenAI } from "@langchain/openai";
-import { Client } from "pg";
+import OpenAI from "openai";
 
 const app = express();
 const PORT = 3000;
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors()); // ✅ allow requests from browser (React UI)
+app.use(cors()); // allow requests from frontend or browser
 
-// Postgres client
-const db = new Client({
-  connectionString: process.env.DATABASE_URL,
-});
-
-(async () => {
-  try {
-    await db.connect();
-    console.log("✅ Connected to Postgres");
-  } catch (err) {
-    console.error("❌ Failed to connect to Postgres:", err);
-  }
-})();
-
-// ChatGPT model
-const model = new ChatOpenAI({
-  modelName: "gpt-4o-mini",
-  temperature: 0.7,
-  openAIApiKey: process.env.OPENAI_API_KEY,
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Health check route
@@ -47,23 +30,40 @@ app.post("/chat", async (req, res) => {
   }
 
   try {
-    const response = await model.invoke([
-      { role: "system", content: "You are a helpful assistant." },
-      { role: "user", content: message },
-    ]);
+    // 🧠 Call OpenAI Responses API using your stored prompt + vector store
+    const response = await openai.responses.create({
+      model: "gpt-4.1-mini", // or "gpt-4o-mini" depending on your plan
+      prompt: {
+        id: "pmpt_68af946582848193940cff86bc54ab4c0c9fc3b51985dbb2", // your stored prompt ID
+        version: "3",
+      },
+      input: [
+        {
+          role: "user",
+          content: message,
+        },
+      ],
+      text: {
+        format: { type: "text" },
+      },
+      reasoning: {},
+      tools: [
+        {
+          type: "file_search",
+          vector_store_ids: [
+            "vs_68af904b69b4819180a20c693f62d4b7", // your existing OpenAI knowledge base
+          ],
+        },
+      ],
+      max_output_tokens: 2048,
+      store: true, // keeps conversation history on OpenAI
+      include: ["web_search_call.action.sources"],
+    });
 
-    const botReply = response.content || "⚠️ No response from model.";
+    // Unified text output
+    const botReply = response.output_text || "⚠️ No response from model.";
 
-    // Optional: Save conversation to Postgres if table exists
-    try {
-      await db.query(
-        "INSERT INTO conversations (user_message, bot_response) VALUES ($1, $2)",
-        [message, botReply]
-      );
-    } catch (dbErr) {
-      console.warn("⚠️ Skipping DB insert (table may not exist yet):", dbErr.message);
-    }
-
+    // Respond to frontend
     res.json({ reply: botReply });
   } catch (err) {
     console.error("❌ Chat error:", err);
@@ -71,6 +71,10 @@ app.post("/chat", async (req, res) => {
   }
 });
 
+// Serve static frontend files from the "public" directory
+app.use(express.static("public"));
+
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Chatbot running at http://localhost:${PORT}`);
 });

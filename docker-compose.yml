@@ -1,27 +1,27 @@
 services:
   postgres:
     image: ankane/pgvector
-    container_name: chatbot_postgres
+    container_name: pd_chatbot_postgres
     restart: always
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: chatbotdb
     ports:
-      - "5432:5432"
+      - "9432:5432"
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: chatbot_pgadmin
+    container_name: pd_chatbot_pgadmin
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@local.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - "8080:80"
+      - "9080:80"
     volumes:
       - ./pgadmin_data:/var/lib/pgadmin
     depends_on:
@@ -29,34 +29,34 @@ services:
 
   n8n:
     image: n8nio/n8n
-    container_name: chatbot_n8n
+    container_name: pd_chatbot_n8n
     restart: always
     environment:
       - GENERIC_TIMEZONE=America/Los_Angeles
     ports:
-      - "5678:5678"
+      - "9678:5678"
     volumes:
       - n8n_data:/home/node/.n8n
 
   chatbot:
     build: ./chatbot
-    container_name: chatbot_node
+    container_name: pd_chatbot_node
     restart: always
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       DATABASE_URL: postgres://admin:admin@postgres:5432/chatbotdb
     ports:
-      - "3000:3000"
+      - "9000:3000"
     depends_on:
       - postgres
 
   chatbot_ui:
     build: ./chatbot-ui
-    container_name: chatbot_ui
+    container_name: pd_chatbot_ui
     environment:
       - REACT_APP_API_URL=http://chatbot:3000/chat
     ports:
-      - "3001:80"
+      - "9001:80"
     depends_on:
       - chatbot
 

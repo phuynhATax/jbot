@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./App.css";
 
 // Use env var injected by Docker or fallback for local dev
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3000/chat";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:9000/chat";
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -39,7 +39,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>💬 AI Chatbot</h1>
+      <h1>Alleviate Tax RSS Helper</h1>
       <div className="chatbox">
         {messages.map((msg, i) => (
           <div
