@@ -5,11 +5,17 @@ import cors from "cors";
 import OpenAI from "openai";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 9000;
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors()); // allow requests from frontend or browser
+app.use(cors({
+  origin: [
+    "https://rssbot.ataxadmin.com", // ✅ allow your production domain
+    "http://localhost:3000",        // ✅ allow local dev access
+  ],
+  credentials: true,
+}));
 
 // Initialize OpenAI client
 const openai = new OpenAI({
