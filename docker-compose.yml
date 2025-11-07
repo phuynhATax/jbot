@@ -45,8 +45,9 @@ services:
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       DATABASE_URL: postgres://admin:admin@postgres:5432/chatbotdb
+      PORT: 9000
     ports:
-      - "9000:3000"
+      - "9000:9000"
     depends_on:
       - postgres
 
@@ -54,7 +55,7 @@ services:
     build: ./chatbot-ui
     container_name: pd_chatbot_ui
     environment:
-      - REACT_APP_API_URL=http://chatbot:3000/chat
+      - REACT_APP_API_URL=https://rssbot.ataxadmin.com/
     ports:
       - "9001:80"
     depends_on:
