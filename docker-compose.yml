@@ -55,7 +55,7 @@ services:
     build: ./chatbot-ui
     container_name: pd_chatbot_ui
     environment:
-      - REACT_APP_API_URL=https://rssbot.ataxadmin.com/
+      - REACT_APP_API_URL=https://rssbot.ataxadmin.com/api/chat
     ports:
       - "9001:80"
     depends_on:
