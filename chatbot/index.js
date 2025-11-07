@@ -1,4 +1,3 @@
-// index.js
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -13,13 +12,17 @@ app.use(cors({
   origin: [
     "https://rssbot.ataxadmin.com", // ✅ allow your production domain
     "http://localhost:3000",        // ✅ allow local dev access
+    "http://localhost:9001",          // your Docker frontend container
   ],
   credentials: true,
 }));
 
+// Serve static frontend files from the "public" directory
+app.use(express.static("public"));
+
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY_2,
 });
 
 // Health check route
@@ -76,9 +79,6 @@ app.post("/chat", async (req, res) => {
     res.status(500).json({ error: "Something went wrong with the chatbot." });
   }
 });
-
-// Serve static frontend files from the "public" directory
-app.use(express.static("public"));
 
 // Start server
 app.listen(PORT, () => {

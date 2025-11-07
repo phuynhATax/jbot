@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./App.css";
 
 // Use env var injected by Docker or fallback for local dev
-const API_URL = process.env.REACT_APP_API_URL || "http://192.168.111.243:9000/chat";
+const API_URL =
+  process.env.REACT_APP_API_URL ||
+  (window.location.hostname.includes("localhost")
+    ? "http://localhost:9000/chat"
+    : "http://chatbot:9000/chat");
 
 function App() {
   const [messages, setMessages] = useState([]);
