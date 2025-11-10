@@ -1,7 +1,6 @@
 import { useState } from "react";
 import "./App.css";
 
-<<<<<<< HEAD
 /* ---------------------------------------------------------------------------
    API endpoint resolution
    - When deployed behind your IT reverse proxy (same domain, HTTPS terminated),
@@ -9,18 +8,11 @@ import "./App.css";
    - This avoids CORS or mixed-content issues.
    - For local dev or Docker bridge, it falls back appropriately.
 --------------------------------------------------------------------------- */
-=======
-// Use env var injected by Docker or fallback for local dev
->>>>>>> 019febbf3dafb72103da5e6be4ba699dc2490384
 const API_URL =
   process.env.REACT_APP_API_URL ||
   (window.location.hostname.includes("localhost")
     ? "http://localhost:9000/chat"
-<<<<<<< HEAD
     : "/api/chat"); // ✅ relative path for production behind reverse proxy
-=======
-    : "http://chatbot:9000/chat");
->>>>>>> 019febbf3dafb72103da5e6be4ba699dc2490384
 
 function App() {
   const [messages, setMessages] = useState([]);

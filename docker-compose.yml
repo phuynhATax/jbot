@@ -6,38 +6,27 @@ services:
     container_name: pd_chatbot_node
     restart: unless-stopped
     environment:
-<<<<<<< HEAD
       NODE_ENV: production
-=======
->>>>>>> 019febbf3dafb72103da5e6be4ba699dc2490384
       OPENAI_API_KEY_2: ${OPENAI_API_KEY_2}
       PORT: 9000
     expose:
       - "9000"                # expose internally for proxy, not necessarily public
     ports:
-<<<<<<< HEAD
       - "9000:9000"           # optional if IT proxy targets host:9000
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/healthz"]
       interval: 30s
       timeout: 10s
       retries: 5
-=======
-      - "9000:9000"
->>>>>>> 019febbf3dafb72103da5e6be4ba699dc2490384
 
   chatbot_ui:
     build: ./chatbot-ui
     container_name: pd_chatbot_ui
     restart: unless-stopped
     environment:
-<<<<<<< HEAD
       # Use relative path for production (reverse proxy same domain)
       # so React build calls "/api/chat" instead of absolute host URL
       - REACT_APP_API_URL=/api/chat
-=======
-      - REACT_APP_API_URL=http://chatbot:9000/chat
->>>>>>> 019febbf3dafb72103da5e6be4ba699dc2490384
     ports:
       - "9001:80"             # optional if IT proxy targets host:9001
     depends_on:
