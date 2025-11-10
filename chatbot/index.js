@@ -11,6 +11,7 @@ app.use(bodyParser.json());
 app.use(cors({
   origin: [
     "https://rssbot.ataxadmin.com", // ✅ allow your production domain
+    "http://192.168.111.243:9001", // For Production Remote Server / SSH
     "http://localhost:9001",          // your Docker frontend container
   ],
   credentials: true,
