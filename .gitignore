@@ -9,6 +9,8 @@ yarn-error.log*
 
 # Environment variables (secrets)
 .env
+.env.development
+.env.production
 
 # Docker
 *.pid

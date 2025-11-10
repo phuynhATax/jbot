@@ -1,67 +1,37 @@
+version: "3.8"
+
 services:
-  postgres:
-    image: ankane/pgvector
-    container_name: pd_chatbot_postgres
-    restart: always
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: chatbotdb
-    ports:
-      - "9432:5432"
-    volumes:
-      - ./postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pd_chatbot_pgadmin
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@local.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "9080:80"
-    volumes:
-      - ./pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      - postgres
-
-  n8n:
-    image: n8nio/n8n
-    container_name: pd_chatbot_n8n
-    restart: always
-    environment:
-      - GENERIC_TIMEZONE=America/Los_Angeles
-    ports:
-      - "9678:5678"
-    volumes:
-      - n8n_data:/home/node/.n8n
-
   chatbot:
     build: ./chatbot
     container_name: pd_chatbot_node
-    restart: always
+    restart: unless-stopped
     environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      DATABASE_URL: postgres://admin:admin@postgres:5432/chatbotdb
+      NODE_ENV: production
+      OPENAI_API_KEY_2: ${OPENAI_API_KEY_2}
       PORT: 9000
+    expose:
+      - "9000"                # expose internally for proxy, not necessarily public
     ports:
-      - "9000:9000"
-    depends_on:
-      - postgres
+      - "9000:9000"           # optional if IT proxy targets host:9000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   chatbot_ui:
     build: ./chatbot-ui
     container_name: pd_chatbot_ui
+    restart: unless-stopped
     environment:
-      - REACT_APP_API_URL=https://rssbot.ataxadmin.com/api/chat
+      # Use relative path for production (reverse proxy same domain)
+      # so React build calls "/api/chat" instead of absolute host URL
+      - REACT_APP_API_URL=/api/chat
     ports:
-      - "9001:80"
+      - "9001:80"             # optional if IT proxy targets host:9001
     depends_on:
-      - chatbot
+      chatbot:
+        condition: service_healthy
 
 volumes:
-  postgres_data:
-  pgadmin_data:
   n8n_data:
