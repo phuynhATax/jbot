@@ -11,7 +11,6 @@ app.use(bodyParser.json());
 app.use(cors({
   origin: [
     "https://rssbot.ataxadmin.com", // ✅ allow your production domain
-    "http://localhost:3000",        // ✅ allow local dev access
     "http://localhost:9001",          // your Docker frontend container
   ],
   credentials: true,
@@ -79,6 +78,16 @@ app.post("/chat", async (req, res) => {
     res.status(500).json({ error: "Something went wrong with the chatbot." });
   }
 });
+
+// --- Health check route for Docker and monitoring ---
+app.get("/healthz", (_req, res) => {
+  res.status(200).json({
+    ok: true,
+    service: "chatbot",
+    time: new Date().toISOString(),
+  });
+});
+
 
 // Start server
 app.listen(PORT, () => {
