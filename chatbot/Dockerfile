@@ -3,6 +3,9 @@
 # Use official Node.js LTS image
 FROM node:20-alpine
 
+# ✅ Install curl (needed for Docker healthcheck)
+RUN apk add --no-cache curl
+
 # Set working directory inside container
 WORKDIR /app
 
