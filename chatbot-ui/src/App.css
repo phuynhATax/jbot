@@ -1,59 +1,351 @@
-.App {
-  font-family: Arial, sans-serif;
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 20px;
+/* =======================================================================
+   App.css — Desktop-first, corporate blue/white, professional chat UI
+   Company theme: primary blue, secondary white
+   ======================================================================= */
+
+/* ----------------------------- THEME TOKENS ---------------------------- */
+:root {
+  --brand-50:  #eef2ff;
+  --brand-100: #e0e7ff;
+  --brand-200: #c7d2fe;
+  --brand-300: #a5b4fc;
+  --brand-400: #818cf8;
+  --brand-500: #6366f1; /* accent */
+  --brand-600: #4f46e5; /* hover */
+  --brand-700: #4338ca;
+  --brand-800: #3730a3; /* primary */
+  --brand-900: #312e81;
+
+  --blue:      #2563eb; /* bright primary option */
+  --blue-600:  #1d4ed8;
+  --blue-700:  #1e40af;
+
+  --bg-app:    #f3f5f8;  /* app background */
+  --bg-pane:   #ffffff;  /* panels */
+  --bg-bot:    #f6f7fb;  /* bot bubble */
+  --bg-user:   #1e3a8a;  /* user bubble (indigo-900) */
+
+  --text:      #0f172a;  /* slate-900 */
+  --text-sub:  #475569;  /* slate-600 */
+  --text-inv:  #ffffff;
+
+  --border:    #e2e8f0;
+  --shadow:    0 8px 28px rgba(16, 24, 40, 0.06);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --focus:     0 0 0 3px rgba(37, 99, 235, 0.35);
 }
 
-.chatbox {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  height: 400px;
-  overflow-y: auto;
-  padding: 10px;
-  margin-bottom: 10px;
-  background: #fafafa;
+/* ----------------------------- BASE / LAYOUT --------------------------- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
 }
+
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue",
+               Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  color: var(--text);
+  background: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Center the app; desktop-first with a generous max width */
+.App {
+  height: 100vh;
+  max-width: 1320px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding-inline: 24px;
+}
+
+/* ------------------------------- HEADER -------------------------------- */
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0 12px;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0; /* never shrink */
+}
+
+header img {
+  height: 52px;
+}
+
+header h1 {
+  font-size: 1.35rem;
+  font-weight: 650;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+
+/* ----------------------------- CHAT WRAPPER ---------------------------- */
+
+/* The scrollable chat area grows to fill the space between header and composer */
+.chatbox {
+  flex: 1; /* grow to fill remaining height */
+  background: var(--bg-pane);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-top: 16px;
+  padding: 24px 28px;
+  box-shadow: var(--shadow);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Custom, subtle scrollbar for desktop feel */
+.chatbox::-webkit-scrollbar {
+  width: 10px;
+}
+.chatbox::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chatbox::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.chatbox:hover::-webkit-scrollbar-thumb {
+  background-color: #94a3b8;
+}
+
+/* ------------------------------ MESSAGES ------------------------------- */
+/* Structure: <div class="message user|bot">...markdown html...</div>
+   We'll visually separate sides, add labels, and polish bubbles.
+*/
 
 .message {
-  margin: 8px 0;
-  padding: 6px 10px;
-  border-radius: 6px;
-  max-width: 80%;
+  max-width: 74%;
+  font-size: 1rem;
+  line-height: 1.65;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  position: relative;
+  word-wrap: break-word;
 }
 
-.user {
-  background: #e0f7fa;
+/* Speaker labels via pseudo-elements */
+.message.user::before,
+.message.bot::before {
+  position: absolute;
+  top: -22px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-sub);
+}
+
+.message.user {
   align-self: flex-end;
-  text-align: right;
+  background: var(--bg-user);
+  color: var(--text-inv);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 6px 16px rgba(30,58,138,0.18);
+  border-top-right-radius: 4px; /* subtle “tail” effect */
+}
+.message.user::before {
+  content: "You";
+  right: 8px;
 }
 
-.bot {
-  background: #f1f8e9;
+.message.bot {
   align-self: flex-start;
+  background: var(--bg-bot);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 16px rgba(2,6,23,0.06);
+  border-top-left-radius: 4px;
 }
+.message.bot::before {
+  content: "Agent";
+  left: 8px;
+}
+
+/* Links inside messages */
+.message a {
+  color: var(--blue);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(37, 99, 235, 0.35);
+}
+.message a:hover {
+  color: var(--blue-600);
+  border-bottom-color: rgba(29, 78, 216, 0.5);
+}
+
+/* Quoted text / blockquotes */
+.message blockquote {
+  margin: 10px 0;
+  padding-left: 14px;
+  border-left: 3px solid var(--brand-300);
+  color: var(--text-sub);
+}
+
+/* Lists spacing */
+.message ul, .message ol {
+  padding-left: 22px;
+  margin: 10px 0;
+}
+
+/* Inline code */
+.message code {
+  background: #f3f4f6;
+  color: #0b1220;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+               monospace;
+  font-size: 0.92em;
+}
+
+/* Code blocks */
+.message pre code {
+  display: block;
+  background: #0b1220;
+  color: #e5e7eb;
+  border-radius: 10px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+/* Thinking style (when loading=true we render a .message.bot.thinking) */
+.message.thinking {
+  font-style: italic;
+  color: var(--text-sub);
+  background: linear-gradient(180deg, #fafbff, #f2f5ff);
+  border: 1px dashed #c7d2fe;
+}
+
+/* -------------------------- DOT PULSE + TIMER -------------------------- */
+
+.dot-pulse {
+  display: inline-flex;
+  gap: 5px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+.dot-pulse span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6b7280;
+  opacity: 0.35;
+  animation: dotPulse 1.3s infinite ease-in-out;
+}
+.dot-pulse span:nth-child(2) { animation-delay: 0.15s; }
+.dot-pulse span:nth-child(3) { animation-delay: 0.30s; }
+
+@keyframes dotPulse {
+  0%, 80%, 100% { opacity: 0.35; transform: scale(0.85); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+.timer {
+  opacity: 0.7;
+  margin-left: 6px;
+}
+
+/* ------------------------------- COMPOSER ------------------------------ */
+/* Structure: <div class="inputBox"><input ... /><button>Send</button></div>
+   Make it roomy, modern, and accessible (min 44px targets).
+*/
 
 .inputBox {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  margin: 16px 0 24px;
+  background: var(--bg-pane);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  flex-shrink: 0; /* fixed at bottom */
 }
 
-input {
+/* Large, desktop-friendly input */
+.inputBox input[type="text"],
+.inputBox input:not([type]) {
   flex: 1;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  min-height: 48px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  outline: none;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
 }
 
-button {
-  padding: 10px 20px;
+.inputBox input:focus {
+  border-color: var(--blue);
+  box-shadow: var(--focus);
+}
+
+/* Modern primary button */
+.inputBox button {
+  min-height: 48px;
+  padding: 0 22px;
   border: none;
-  border-radius: 6px;
-  background: #1976d2;
-  color: white;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-inv);
+  background: var(--blue);
   cursor: pointer;
+  transition: background-color 120ms ease, transform 60ms ease;
 }
 
-button:hover {
-  background: #1565c0;
+.inputBox button:hover { background: var(--blue-600); }
+.inputBox button:active { transform: translateY(0.5px); }
+.inputBox button:disabled {
+  background: #9ec1ff;
+  cursor: not-allowed;
+  opacity: 0.9;
 }
+
+/* ------------------------------ ACCESSIBILITY -------------------------- */
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+/* ------------------------------ RESPONSIVE ----------------------------- */
+/* Not mobile-first; keep desktop proportions but prevent overflow on small widths. */
+
+@media (max-width: 960px) {
+  .App { padding-inline: 16px; }
+  .message { max-width: 88%; }
+}
+
+@media (max-width: 680px) {
+  .message { max-width: 92%; }
+  .inputBox { padding: 12px; }
+  .inputBox button { padding: 0 16px; }
+}
+
+/* --------------------------- SUBTLE APPEAR FX -------------------------- */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.message { animation: fadeUp 140ms ease; }
