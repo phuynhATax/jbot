@@ -1,63 +1,75 @@
-import { useState } from "react";
+// ---------------------------------------------------------------
+// App.js — Desktop chat UI with stable "Agent is thinking..." timer
+// ---------------------------------------------------------------
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
+import { marked } from "marked";
+import hljs from "highlight.js";
+import "highlight.js/styles/github.css";
 
-/* ---------------------------------------------------------------------------
-   API endpoint resolution
-   - When deployed behind your IT reverse proxy (same domain, HTTPS terminated),
-     you should call the API via a *relative* path: "/api/chat".
-   - This avoids CORS or mixed-content issues.
-   - For local dev or Docker bridge, it falls back appropriately.
---------------------------------------------------------------------------- */
+marked.setOptions({
+  highlight: (code) => hljs.highlightAuto(code).value,
+  breaks: true,
+});
+
 const API_URL =
   process.env.REACT_APP_API_URL ||
   (window.location.hostname.includes("localhost")
     ? "http://localhost:9000/chat"
-    : "/api/chat"); // ✅ relative path for production behind reverse proxy
+    : "/api/chat");
 
-function App() {
+export default function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef(null);
+
+  // ⏱️ independent timer
+  useEffect(() => {
+    if (loading) {
+      setElapsed(0);
+      timerRef.current = setInterval(() => {
+        setElapsed((e) => e + 1);
+      }, 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [loading]);
 
   const sendMessage = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
 
-    // optimistic user message
     const userMsg = { sender: "user", text: trimmed };
-    setMessages((msgs) => [...msgs, userMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
-    setErr("");
     setLoading(true);
 
     try {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "same-origin", // ✅ important behind reverse proxy
         body: JSON.stringify({ message: trimmed }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
       const data = await response.json();
       const botMsg = {
         sender: "bot",
-        text: data.reply ?? "⚠️ No response received from backend.",
+        text: marked.parse(data.reply || "⚠️ No response"),
       };
-
-      setMessages((msgs) => [...msgs, botMsg]);
-    } catch (error) {
-      console.error("❌ Chat fetch failed:", error);
-      setErr("Chat failed. Check reverse proxy routing or backend logs.");
-      setMessages((msgs) => [
-        ...msgs,
+      setMessages((prev) => [...prev, botMsg]);
+    } catch (err) {
+      console.error("❌ Chat fetch failed:", err);
+      setMessages((prev) => [
+        ...prev,
         {
           sender: "bot",
-          text: "⚠️ Error connecting to the server. Please try again shortly.",
+          text:
+            "⚠️ Error connecting to the server. Please try again shortly.",
         },
       ]);
     } finally {
@@ -67,17 +79,33 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Alleviate Tax RSS Helper</h1>
+      <header>
+        <img src="alleviate_logo.svg" alt="Alleviate Tax Logo" />
+        <h1>Alleviate Tax RSS Assistant</h1>
+      </header>
 
       <div className="chatbox">
         {messages.map((msg, i) => (
           <div
             key={i}
             className={`message ${msg.sender === "user" ? "user" : "bot"}`}
-          >
-            <b>{msg.sender === "user" ? "You" : "Bot"}:</b> {msg.text}
-          </div>
+            dangerouslySetInnerHTML={{ __html: msg.text }}
+          />
         ))}
+
+        {loading && (
+          <div className="message bot thinking">
+            <em>
+              🤖 Agent is thinking
+              <span className="dot-pulse">
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
+              <span className="timer"> ({elapsed}s)</span>
+            </em>
+          </div>
+        )}
       </div>
 
       <div className="inputBox">
@@ -90,21 +118,9 @@ function App() {
           disabled={loading}
         />
         <button onClick={sendMessage} disabled={loading}>
-          {loading ? "Sending…" : "Send"}
+          {loading ? `Thinking (${elapsed}s)` : "Send"}
         </button>
-      </div>
-
-      {err && (
-        <div className="error" style={{ color: "red", marginTop: "0.5rem" }}>
-          {err}
-        </div>
-      )}
-
-      <div className="meta">
-        <code>API_URL: {API_URL}</code>
       </div>
     </div>
   );
 }
-
-export default App;
